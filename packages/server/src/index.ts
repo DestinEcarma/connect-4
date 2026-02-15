@@ -1,5 +1,7 @@
 import express from "express";
 import { createServer } from "http";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import { logger } from "./lib/logger";
 import { gameManager } from "./managers/game-manager";
@@ -13,6 +15,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = initSocket(httpServer);
 
+const clientRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "../public");
+
+app.use(express.static(clientRoot));
 app.get("/health", (_, res) => res.status(200).send("OK"));
 
 if (process.env.NODE_ENV !== "production") {
@@ -20,6 +25,8 @@ if (process.env.NODE_ENV !== "production") {
     app.get("/api/active-games", (_, res) => res.status(200).send(gameManager.getActiveRoomIds()));
     app.get("/api/sockets-to-room-id", (_, res) => res.status(200).send(gameManager.getSocketsToRoomId()));
 }
+
+app.get(/.*/, (_, res) => res.sendFile(path.join(clientRoot, "index.html")));
 
 const server = httpServer.listen(PORT, () => {
     logger.info(`Server running at http://localhost:${PORT}`);
