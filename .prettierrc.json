@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json.schemastore.org/prettierrc",
+
+    "plugins": ["@trivago/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+
+    "tailwindFunctions": ["cva"],
+    "tailwindAttributes": [".*ClassName"],
+
+    "importOrder": ["^react", "<THIRD_PARTY_MODULES>", "^@connect-4/(.*)$", "^@/(.*)$", "^[./]"],
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true,
+
+    "semi": true,
+    "tabWidth": 4,
+    "useTabs": false,
+    "singleQuote": false,
+    "printWidth": 120,
+    "overrides": [
+        {
+            "files": "*.tsx",
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": ["*.yml", "*.yaml"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}

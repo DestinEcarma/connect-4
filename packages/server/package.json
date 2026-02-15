@@ -1,0 +1,22 @@
+{
+    "name": "@connect-4/server",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts"
+    },
+    "dependencies": {
+        "@connect-4/shared": "^0.0.0",
+        "@types/express": "^5.0.6",
+        "express": "^5.2.1",
+        "nanoid": "^3.3.11",
+        "pino": "^10.3.0",
+        "socket.io": "^4.8.3",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
+    },
+    "devDependencies": {
+        "pino-pretty": "^13.1.3"
+    }
+}

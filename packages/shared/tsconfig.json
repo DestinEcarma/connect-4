@@ -1,0 +1,22 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "types": [],
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+
+        "sourceMap": false,
+        "declaration": false,
+        "declarationMap": false,
+
+        "noUncheckedIndexedAccess": false,
+        "exactOptionalPropertyTypes": false,
+
+        "jsx": "react-jsx",
+        "verbatimModuleSyntax": false,
+        "noUncheckedSideEffectImports": false,
+        "moduleDetection": "force"
+    }
+}

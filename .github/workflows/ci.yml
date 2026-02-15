@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-format:
+    name: client lint and format
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: use node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: install dependencies
+        run: npm ci
+      - name: check linting
+        run: npm run check:lint
+      - name: check formatting
+        run: npm run check:format

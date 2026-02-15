@@ -1,0 +1,30 @@
+{
+    "name": "connect-4",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "type": "module",
+    "scripts": {
+        "dev:client": "npm run dev -w @connect-4/client",
+        "dev:server": "npm run dev -w @connect-4/server",
+        "dev": "concurrently \"npm:dev:*\"",
+        "check:lint": "eslint .",
+        "check:format": "prettier . --check",
+        "fix:lint": "eslint . --fix",
+        "fix:format": "prettier . --write"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.1",
+        "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+        "concurrently": "^9.2.1",
+        "eslint": "^9.39.1",
+        "eslint-plugin-react-hooks": "^7.0.1",
+        "eslint-plugin-react-refresh": "^0.4.24",
+        "globals": "^16.5.0",
+        "prettier": "^3.8.1",
+        "prettier-plugin-tailwindcss": "^0.7.2",
+        "typescript": "~5.9.3",
+        "typescript-eslint": "^8.46.4"
+    }
+}
