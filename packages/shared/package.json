@@ -3,6 +3,18 @@
     "private": true,
     "version": "0.0.0",
     "type": "module",
-    "main": "index.ts",
-    "devDependencies": {}
+    "module": "./dist/index.js",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.cts",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "dev": "pkgroll --watch",
+        "build": "pkgroll"
+    },
+    "devDependencies": {
+        "pkgroll": "^2.25.2"
+    }
 }
