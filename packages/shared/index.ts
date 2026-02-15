@@ -8,5 +8,5 @@ export {
     toLocation,
     getColMask,
     getWinningMask,
-    bitboardToGrid,
+    bitboardToGrid
 } from "./src/bitboard";

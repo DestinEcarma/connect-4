@@ -16,9 +16,9 @@ export default defineConfig([
             ecmaVersion: 2020,
             globals: {
                 ...globals.es2020,
-                ...globals.node,
-            },
-        },
+                ...globals.node
+            }
+        }
     },
 
     // 2. React-specific Config (Only for the Client)
@@ -26,14 +26,14 @@ export default defineConfig([
         files: ["packages/client/src/**/*.{ts,tsx}"],
         plugins: {
             "react-hooks": reactHooks,
-            "react-refresh": reactRefresh,
+            "react-refresh": reactRefresh
         },
         languageOptions: {
-            globals: globals.browser,
+            globals: globals.browser
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
-            "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-        },
-    },
+            "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
+        }
+    }
 ]);

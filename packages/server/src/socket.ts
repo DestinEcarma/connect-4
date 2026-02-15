@@ -8,7 +8,7 @@ import { logger } from "./lib/logger";
 function initSocket(httpServer: HttpServer) {
     const io = new Server(httpServer, {
         path: "/socket.io/",
-        pingTimeout: 60000,
+        pingTimeout: 60000
     });
 
     initGameHandler(io);

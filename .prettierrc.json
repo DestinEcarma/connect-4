@@ -15,6 +15,7 @@
     "useTabs": false,
     "singleQuote": false,
     "printWidth": 120,
+    "trailingComma": "none",
     "overrides": [
         {
             "files": "*.tsx",

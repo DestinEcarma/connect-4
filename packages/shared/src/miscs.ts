@@ -1,12 +1,12 @@
 enum Player {
     One = 0,
-    Two = 1,
+    Two = 1
 }
 
 enum GameStatus {
     Playing = "Playing",
     Won = "Won",
-    Draw = "Draw",
+    Draw = "Draw"
 }
 
 export { Player, GameStatus };

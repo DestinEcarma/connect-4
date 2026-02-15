@@ -179,7 +179,7 @@ function useGameRoom({ id, onStart: onStartCallback, onUnauthorized: onUnauthori
         isTurn,
         lastMove,
         winner,
-        winningMask,
+        winningMask
     };
 }
 

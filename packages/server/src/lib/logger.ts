@@ -6,11 +6,11 @@ const logger = pino({
         options: {
             colorize: true,
             translate: "HH:MM:ss Z",
-            ignore: "pid,hostname",
-        },
+            ignore: "pid,hostname"
+        }
     },
 
-    level: process.env.NODE_ENV === "production" ? "info" : "debug",
+    level: process.env.NODE_ENV === "production" ? "info" : "debug"
 });
 
 export { logger };

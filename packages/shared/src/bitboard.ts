@@ -95,5 +95,5 @@ export {
     getColMask,
     getWinningMask,
     bitboardToGrid,
-    printBitBoard,
+    printBitBoard
 };

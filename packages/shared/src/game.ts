@@ -45,7 +45,7 @@ class Game {
             moveCount: this.moveCount,
             status: this.status,
             turn: this.turn,
-            winner: this.winner,
+            winner: this.winner
         };
     }
 

@@ -18,9 +18,9 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "queue", element: <Queue /> },
-      { path: "room/:id", element: <Room /> },
-    ],
-  },
+      { path: "room/:id", element: <Room /> }
+    ]
+  }
 ]);
 
 createRoot(document.getElementById("root")!).render(
@@ -30,5 +30,5 @@ createRoot(document.getElementById("root")!).render(
         <RouterProvider router={router} />
       </TopBarProvider>
     </ThemeProvider>
-  </StrictMode>,
+  </StrictMode>
 );

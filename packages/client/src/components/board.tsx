@@ -28,7 +28,7 @@ function Board({ className, boards, isTurn, lastMove, winningMask, onClick }: Bo
       onTouchEnd={() => setHighlightCol(null)}
       className={cn(
         "bg-card border-border grid w-full max-w-3xl grid-cols-7 grid-rows-6 rounded-4xl shadow-lg select-none data-[is-turn=true]:cursor-pointer",
-        className,
+        className
       )}
     >
       {grid.map((rows, row) =>
@@ -65,7 +65,7 @@ function Board({ className, boards, isTurn, lastMove, winningMask, onClick }: Bo
               </div>
             </div>
           );
-        }),
+        })
       )}
     </div>
   );

@@ -4,7 +4,7 @@ const socket = io("/", {
     path: "/socket.io/",
     autoConnect: true,
     transports: ["websocket", "polling"],
-    reconnectionAttempts: 5,
+    reconnectionAttempts: 5
 });
 
 socket.on("connect_error", (err) => {

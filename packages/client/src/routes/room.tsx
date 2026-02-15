@@ -11,7 +11,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useGameRoom } from "@/hooks/use-game-room";
@@ -40,14 +40,14 @@ function Room() {
     isTurn,
     lastMove,
     winner,
-    winningMask,
+    winningMask
   } = useGameRoom({
     id: id ?? "",
     onStart: () => {
       setGameOver(false);
       setIsRematchRequested(false);
     },
-    onUnauthorized: () => setUnauthorized(true),
+    onUnauthorized: () => setUnauthorized(true)
   });
 
   useEffect(() => {

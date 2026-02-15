@@ -124,7 +124,7 @@ function registerGameHandlers(io: Server, socket: Socket) {
         if (status !== GameStatus.Playing) {
             io.to(game.roomId).emit("game:end", {
                 ...(status === GameStatus.Won ? game.serialize_win() : game.serialize_draw()),
-                rematchExpiry: Date.now() + REMATCH_GRACE_PERIOD,
+                rematchExpiry: Date.now() + REMATCH_GRACE_PERIOD
             });
 
             game.rematchTimeout = setTimeout(() => rematchGracePeriod(io, roomId), REMATCH_GRACE_PERIOD);

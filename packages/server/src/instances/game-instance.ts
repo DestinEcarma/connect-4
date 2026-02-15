@@ -17,7 +17,7 @@ class GameInstance {
     constructor(
         public roomId: string,
         public instance: Game,
-        public tokens: [string, string],
+        public tokens: [string, string]
     ) {}
 
     start() {
@@ -54,7 +54,7 @@ class GameInstance {
             players: this.players,
             activePlayerId: this.players[this.instance.getTurn()],
             boards: this.instance.getBoards().map((b) => b.toString()),
-            lastMove: this.instance.getLastMove(),
+            lastMove: this.instance.getLastMove()
         };
     }
 
@@ -63,14 +63,14 @@ class GameInstance {
             winner: this.players[this.instance.getWinner()!],
             winningMask: this.instance.getWinningMask()!.toString(),
             status: "win",
-            reason: "Player won the game",
+            reason: "Player won the game"
         };
     }
 
     serialize_draw() {
         return {
             status: "draw",
-            reason: "Game ended in a draw",
+            reason: "Game ended in a draw"
         };
     }
 
@@ -78,7 +78,7 @@ class GameInstance {
         return {
             activePlayerId: this.players[this.instance.getTurn()],
             boards: this.instance.getBoards().map((b) => b.toString()),
-            lastMove: this.instance.getLastMove(),
+            lastMove: this.instance.getLastMove()
         };
     }
 
@@ -86,7 +86,7 @@ class GameInstance {
         return {
             winner: this.players.find((id) => id !== null && id !== playerId),
             status: "resign",
-            reason: "Player disconnected",
+            reason: "Player disconnected"
         };
     }
 
@@ -94,14 +94,14 @@ class GameInstance {
         return {
             winner: this.players[this.instance.getWinner()!],
             status: "timeout",
-            reason: "Player ran out of time",
+            reason: "Player ran out of time"
         };
     }
 
     serialize_end() {
         return {
             status: "end",
-            reason: "Opponent left the lobby",
+            reason: "Opponent left the lobby"
         };
     }
 }

@@ -23,7 +23,7 @@ class GameManager {
         return Array.from(
             this.roomIdsToGame
                 .values()
-                .filter((game) => game.started && game.instance.getStatus() === GameStatus.Playing),
+                .filter((game) => game.started && game.instance.getStatus() === GameStatus.Playing)
         );
     }
 
@@ -67,7 +67,7 @@ class GameManager {
                 }
 
                 this.reservedRoomIdsToTimout.delete(roomId);
-            }, RESERVATION_EXPIRY),
+            }, RESERVATION_EXPIRY)
         );
 
         return game;

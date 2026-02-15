@@ -26,7 +26,7 @@ function ThemeProvider({ defaultTheme = "system", storageKey = THEME_STORAGE, ..
   const value = {
     theme,
     activeTheme,
-    setTheme: saveTheme,
+    setTheme: saveTheme
   };
 
   return <ThemeProviderContext.Provider {...props} value={value} />;

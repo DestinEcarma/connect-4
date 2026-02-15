@@ -7,7 +7,7 @@ function TopBarItem({
   side = "left",
   id,
   order = 0,
-  children,
+  children
 }: React.PropsWithChildren<{
   side?: Side;
   id: string;
