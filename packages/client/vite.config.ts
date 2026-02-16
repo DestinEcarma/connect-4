@@ -17,5 +17,9 @@ export default defineConfig({
                 target: "ws://localhost:3000"
             }
         }
+    },
+    build: {
+        outDir: path.resolve(__dirname, "../server/public"),
+        emptyOutDir: true
     }
 });

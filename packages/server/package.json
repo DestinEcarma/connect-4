@@ -6,7 +6,8 @@
     "main": "./dist/index.js",
     "scripts": {
         "dev": "tsx watch src/index.ts",
-        "build": "pkgroll"
+        "build": "pkgroll",
+        "start": "node dist/index.js"
     },
     "dependencies": {
         "@connect-4/shared": "^0.0.0",
