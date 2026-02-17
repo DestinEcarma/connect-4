@@ -20,10 +20,8 @@ class GameManager {
     }
 
     getActiveGames() {
-        return Array.from(
-            this.roomIdsToGame
-                .values()
-                .filter((game) => game.started && game.instance.getStatus() === GameStatus.Playing)
+        return Array.from(this.roomIdsToGame.values()).filter(
+            (game) => game.started && game.instance.getStatus() === GameStatus.Playing
         );
     }
 
