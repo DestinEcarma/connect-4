@@ -1,3 +1,2 @@
-export * from "./game";
-export * from "./miscs";
-export { ROWS, COLS, STRIDE, fromLocation, toLocation, getColMask, getWinningMask, bitboardToGrid } from "./bitboard";
+export * as connect4 from "./connect-4";
+export * as protocol from "./protocol";

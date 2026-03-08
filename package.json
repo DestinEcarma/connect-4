@@ -8,6 +8,7 @@
     ],
     "type": "module",
     "scripts": {
+        "dev:shared": "npm run dev -w @connect-4/shared",
         "dev:client": "npm run dev -w @connect-4/client",
         "dev:server": "npm run dev -w @connect-4/server",
         "dev": "concurrently \"npm:dev:*\"",

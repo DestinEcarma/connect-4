@@ -4,8 +4,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { logger } from "./lib/logger";
-import { gameManager } from "./managers/game-manager";
-import { matchmakingManager } from "./managers/matchmaking-manager";
 import { initSocket } from "./socket";
 
 const PORT = process.env.PORT || 3000;
@@ -21,9 +19,7 @@ app.use(express.static(clientRoot));
 app.get("/health", (_, res) => res.status(200).send("OK"));
 
 if (process.env.NODE_ENV !== "production") {
-    app.get("/api/in-queue", (_, res) => res.status(200).send(matchmakingManager.getInQueue()));
-    app.get("/api/active-games", (_, res) => res.status(200).send(gameManager.getActiveRoomIds()));
-    app.get("/api/sockets-to-room-id", (_, res) => res.status(200).send(gameManager.getSocketsToRoomId()));
+    // TODO: add raw data for debug, checking for memory leaks
 }
 
 app.get(/.*/, (_, res) => res.sendFile(path.join(clientRoot, "index.html")));

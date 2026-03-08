@@ -1,186 +1,245 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 
-import { useEffectEvent } from "radix-ui/internal";
+import type { protocol } from "@connect-4/shared";
 
+import * as gameRoomClient from "@/services/game-room.client";
 import { socket } from "@/services/socket";
 
-type EndData =
-    | { status: "end"; reason: string }
-    | { status: "timeout" | "resign"; winner: string; reason: string }
-    | { status: "win"; winner: string; winningMask: string; rematchExpiry: number }
-    | { status: "draw"; reason: string; rematchExpiry: number };
+type Role = 0 | 1;
 
-interface UseGameRoomProps {
-    id: string;
+type LastMove = { column: number; row: number };
 
-    onStart: () => void;
-    onUnauthorized: () => void;
+type State =
+    | {
+          tag: "joining";
+          roomId: string;
+      }
+    | {
+          tag: "waiting";
+          myRole: Role;
+          timersMs: readonly [number, number];
+          serverNow: number;
+          otherOnline: boolean;
+      }
+    | {
+          tag: "playing";
+          myRole: Role;
+          otherOnline: boolean;
+          activePlayerId: string | null;
+          timersMs: readonly [number, number];
+          serverNow: number;
+          boards: readonly [bigint, bigint];
+          lastMove?: LastMove;
+      }
+    | {
+          tag: "ended" | "rematch";
+          myRole: Role;
+          otherOnline: boolean;
+          activePlayerId: string | null;
+          timersMs: readonly [number, number];
+          serverNow: number;
+          boards: readonly [bigint, bigint];
+          lastMove?: LastMove;
+          end: protocol.EndPayload;
+      }
+    | { tag: "unauthorized" }
+    | {
+          tag: "expired";
+          myRole: Role;
+          timersMs: readonly [number, number];
+          otherOnline: boolean;
+          cleanupAt: number;
+          serverNow: number;
+      }
+    | { tag: "cleanup" };
+
+type Action =
+    | { type: "WAIT"; payload: protocol.WaitPayload }
+    | { type: "START"; payload: protocol.StartPayload }
+    | { type: "UPDATE"; payload: protocol.UpdatePayload }
+    | { type: "REMATCH" }
+    | { type: "OTHER_ONLINE"; online: boolean }
+    | { type: "END"; payload: protocol.EndPayload }
+    | { type: "UNAUTHORIZE" }
+    | { type: "EXPIRE"; payload: protocol.ExpirePayload }
+    | { type: "CLEAN_UP" };
+
+function deriveMyRole(players: readonly (string | null)[], mySocketId: string): Role | undefined {
+    const idx = players.indexOf(mySocketId);
+    if (idx === 0 || idx === 1) return idx;
+    return undefined;
 }
 
-const EXPIRED_GRACE_PERIOD = 10000;
-const LEAVE_GRACE_PERIOD = 13000;
+function reducer(state: State, action: Action): State {
+    switch (action.type) {
+        case "WAIT": {
+            if (state.tag === "unauthorized" || state.tag === "cleanup") return state;
 
-function useGameRoom({ id, onStart: onStartCallback, onUnauthorized: onUnauthorizedCallback }: UseGameRoomProps) {
-    const [playing, setPlaying] = useState(false);
+            const myRole = deriveMyRole(action.payload.players, socket.id ?? "");
+            if (myRole === undefined) return { tag: "unauthorized" };
 
-    const [myRole, setMyRole] = useState<number>();
-
-    const [waiting, setWaiting] = useState(false);
-    const [rematch, setRematch] = useState(false);
-    const [otherOnline, setOtherOnline] = useState(false);
-
-    const [timeLeave, setTimeLeave] = useState<number>();
-    const [leaveSecondsLeft, setLeaveSecondsLeft] = useState(0);
-
-    const [expired, setExpired] = useState(false);
-    const [terminated, setTerminated] = useState(false);
-
-    const [timers, setTimers] = useState([0, 0]);
-    const [boards, setBoards] = useState([0n, 0n]);
-    const [isTurn, setIsTurn] = useState(false);
-    const [lastMove, setLastMove] = useState<{ column: number; row: number }>();
-    const [winner, setWinner] = useState<string>();
-    const [winningMask, setWinningMask] = useState<bigint>();
-
-    const onTick = useEffectEvent(({ timers }) => setTimers(timers));
-    const onRematch = useEffectEvent(() => setRematch(true));
-
-    const onLeave = useEffectEvent(() => setOtherOnline(false));
-    const onReconnect = useEffectEvent(() => setOtherOnline(true));
-    const onDeparture = useEffectEvent(() => setOtherOnline(false));
-
-    const onTerminate = useEffectEvent(() => setTerminated(true));
-    const onUnauthorize = useEffectEvent(() => onUnauthorizedCallback());
-
-    const onExpire = useEffectEvent(() => {
-        setExpired(true);
-        setTimeLeave(Date.now() + EXPIRED_GRACE_PERIOD);
-    });
-
-    const onWait = useEffectEvent(() => {
-        setWaiting(true);
-        setOtherOnline(false);
-    });
-
-    const onStart = useEffectEvent(({ boards: [p1, p2], players, timers, activePlayerId, lastMove }) => {
-        setPlaying(true);
-
-        setMyRole(players.indexOf(socket.id));
-
-        setWaiting(false);
-        setRematch(false);
-        setOtherOnline(true);
-
-        setWinner(undefined);
-        setWinningMask(undefined);
-
-        setTimers(timers);
-        setBoards([BigInt(p1), BigInt(p2)]);
-        setIsTurn(activePlayerId === socket.id);
-        setLastMove(lastMove);
-
-        onStartCallback();
-    });
-
-    const onEnd = useEffectEvent((data: EndData) => {
-        setPlaying(false);
-        setIsTurn(false);
-
-        if ("rematchExpiry" in data) setTimeLeave(data.rematchExpiry);
-        if ("winner" in data) setWinner(data.winner);
-        if ("winningMask" in data) setWinningMask(BigInt(data.winningMask));
-
-        if (data.status === "end" || data.status === "resign") setTimeLeave(Date.now() + LEAVE_GRACE_PERIOD);
-    });
-
-    const onUpdate = useEffectEvent(({ boards: [p1, p2], activePlayerId, lastMove }) => {
-        setBoards([BigInt(p1), BigInt(p2)]);
-        setIsTurn(activePlayerId === socket.id);
-        setLastMove(lastMove);
-    });
-
-    useEffect(() => {
-        socket.on("game:wait", onWait);
-        socket.on("game:start", onStart);
-        socket.on("game:rematch", onRematch);
-
-        socket.on("game:tick", onTick);
-        socket.on("game:update", onUpdate);
-
-        socket.on("game:reconnect", onReconnect);
-        socket.on("game:unmount", onDeparture);
-        socket.on("game:disconnect", onDeparture);
-
-        socket.on("game:end", onEnd);
-        socket.on("game:leave", onLeave);
-        socket.on("game:expire", onExpire);
-        socket.on("game:terminate", onTerminate);
-        socket.on("game:unauthorize", onUnauthorize);
-
-        socket.emit("game:join", { roomId: id, token: sessionStorage.getItem(`token_${id}`) });
-
-        return () => {
-            socket.emit("game:unmount");
-
-            socket.off("game:wait", onWait);
-            socket.off("game:start", onStart);
-            socket.off("game:rematch", onRematch);
-
-            socket.off("game:tick", onTick);
-            socket.off("game:update", onUpdate);
-
-            socket.off("game:reconnect", onReconnect);
-            socket.off("game:unmount", onDeparture);
-            socket.off("game:disconnect", onDeparture);
-
-            socket.off("game:end", onEnd);
-            socket.off("game:leave", onLeave);
-            socket.off("game:expire", onExpire);
-            socket.off("game:terminate", onTerminate);
-            socket.off("game:unauthorize", onUnauthorize);
-        };
-    }, [id]);
-
-    useEffect(() => {
-        if (timeLeave === undefined) {
-            setLeaveSecondsLeft(0);
-            return;
+            return {
+                tag: "waiting",
+                myRole,
+                timersMs: action.payload.timersMs,
+                serverNow: action.payload.serverNow,
+                otherOnline: false
+            };
         }
 
-        const id = setInterval(() => {
-            const remaining = Math.max(0, Math.floor((timeLeave - Date.now()) / 1000));
-            setLeaveSecondsLeft(remaining);
+        case "START": {
+            if (state.tag === "unauthorized" || state.tag === "cleanup") return state;
 
-            if (remaining === 0) {
-                clearInterval(id);
+            const myRole = deriveMyRole(action.payload.players, socket.id ?? "");
+            if (myRole === undefined) return { tag: "unauthorized" };
 
-                setTimeLeave(undefined);
+            return {
+                tag: "playing",
+                myRole,
+                otherOnline: true,
+                activePlayerId: action.payload.activePlayerId,
+                timersMs: action.payload.timersMs,
+                serverNow: action.payload.serverNow,
+                boards: action.payload.boards as [bigint, bigint],
+                lastMove: action.payload.lastMove
+            };
+        }
 
-                if (!playing) setTerminated(true);
-            }
-        }, 1000);
+        case "UPDATE": {
+            if (state.tag !== "playing") return state;
 
-        return () => clearTimeout(id);
-    }, [timeLeave, playing]);
+            return {
+                ...state,
+                activePlayerId: action.payload.activePlayerId,
+                timersMs: action.payload.timersMs,
+                serverNow: action.payload.serverNow,
+                boards: action.payload.boards as [bigint, bigint],
+                lastMove: action.payload.lastMove
+            };
+        }
 
-    return {
-        myRole,
+        case "REMATCH": {
+            if (state.tag !== "ended") return state;
 
-        waiting,
-        rematch,
-        otherOnline,
+            return {
+                ...state,
+                tag: "rematch"
+            };
+        }
 
-        leaveSecondsLeft,
-        expired,
-        terminated,
+        case "END": {
+            if (state.tag !== "playing" && state.tag !== "ended") return state;
 
-        timers: myRole !== undefined ? [timers[myRole], timers[1 - myRole]] : timers,
-        boards,
-        isTurn,
-        lastMove,
-        winner,
-        winningMask
-    };
+            const end =
+                state.tag === "ended"
+                    ? {
+                          ...action.payload,
+                          statusAt: state.end.statusAt,
+                          cleanupAt: state.end.cleanupAt
+                      }
+                    : action.payload;
+
+            return {
+                tag: "ended",
+                myRole: state.myRole,
+                otherOnline:
+                    action.payload.status === "resign" || action.payload.status === "end" ? false : state.otherOnline,
+                activePlayerId: state.activePlayerId,
+                timersMs: state.timersMs,
+                serverNow: state.serverNow,
+                boards: state.boards,
+                lastMove: state.lastMove,
+                end
+            };
+        }
+
+        case "OTHER_ONLINE": {
+            if (state.tag === "waiting" || state.tag === "playing" || state.tag === "ended" || state.tag === "rematch")
+                return { ...state, otherOnline: action.online };
+
+            return state;
+        }
+
+        case "UNAUTHORIZE":
+            return { tag: "unauthorized" };
+
+        case "EXPIRE":
+            if (state.tag !== "waiting") return state;
+
+            return {
+                tag: "expired",
+                myRole: state.myRole,
+                timersMs: state.timersMs,
+                otherOnline: state.otherOnline,
+                cleanupAt: action.payload.cleanupAt,
+                serverNow: action.payload.serverNow
+            };
+
+        case "CLEAN_UP":
+            return { tag: "cleanup" };
+
+        default:
+            return state;
+    }
 }
 
-export { useGameRoom };
+function useGameRoom(params: { roomId: string; token: string | null }) {
+    const { roomId, token } = params;
+
+    const [state, dispatch] = useReducer(reducer, { tag: "joining", roomId } as State);
+
+    useEffect(() => {
+        if (!roomId) return;
+
+        const unsubscribe = gameRoomClient.subscribe({
+            onWait: (payload) => dispatch({ type: "WAIT", payload }),
+            onStart: (payload) => dispatch({ type: "START", payload }),
+            onRematch: () => dispatch({ type: "REMATCH" }),
+
+            onUpdate: (payload) => dispatch({ type: "UPDATE", payload }),
+            onOtherOnline: (online) => dispatch({ type: "OTHER_ONLINE", online }),
+
+            onEnd: (payload) => dispatch({ type: "END", payload }),
+
+            onExpire: (payload) => dispatch({ type: "EXPIRE", payload }),
+            onUnauthorize: () => dispatch({ type: "UNAUTHORIZE" }),
+            onCleanup: () => dispatch({ type: "CLEAN_UP" })
+        });
+
+        gameRoomClient.join(roomId, token);
+
+        return () => {
+            unsubscribe();
+            gameRoomClient.leave(true);
+        };
+    }, [roomId, token]);
+
+    const actions = {
+        move: gameRoomClient.move,
+        rematch: gameRoomClient.rematch,
+        leave: gameRoomClient.leave
+    };
+
+    const view = useMemo(() => {
+        if (state.tag !== "playing" && state.tag !== "ended" && state.tag !== "rematch") return null;
+
+        const myRole = state.myRole;
+        const timers = [state.timersMs[myRole], state.timersMs[myRole ^ 1]] as const;
+        const isTurn = state.activePlayerId === socket.id;
+
+        return {
+            myRole,
+            otherOnline: state.otherOnline,
+            timers,
+            boards: state.boards,
+            lastMove: state.lastMove,
+            isTurn,
+            turn: (isTurn ? myRole : myRole ^ 1) as Role,
+            ended: state.tag !== "playing" ? { isWinner: state.end.winner === socket.id, ...state.end } : undefined
+        } as const;
+    }, [state]);
+
+    return { state, view, actions };
+}
+
+export { useGameRoom, type Role };

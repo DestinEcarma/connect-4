@@ -2,13 +2,13 @@ import { useState } from "react";
 
 import { Dot, Star } from "lucide-react";
 
-import { bitboardToGrid, fromLocation } from "@connect-4/shared";
+import { connect4 } from "@connect-4/shared";
 
 import { cn } from "@/lib/utils";
 
 interface BoardProps {
   className?: string;
-  boards: bigint[];
+  boards: readonly [bigint, bigint];
   isTurn?: boolean;
   lastMove?: { column: number; row: number };
   winningMask?: bigint;
@@ -16,7 +16,7 @@ interface BoardProps {
 }
 
 function Board({ className, boards, isTurn, lastMove, winningMask, onClick }: BoardProps) {
-  const grid = bitboardToGrid(boards[0], boards[1]);
+  const grid = connect4.bitboardToGrid(boards[0], boards[1]);
   const [highlightCol, setHighlightCol] = useState<number | null>(null);
 
   if (!isTurn && highlightCol !== null) setHighlightCol(null);
@@ -33,7 +33,8 @@ function Board({ className, boards, isTurn, lastMove, winningMask, onClick }: Bo
     >
       {grid.map((rows, row) =>
         rows.map((colValue, col) => {
-          const isWinningCell = winningMask !== undefined && (winningMask & (1n << fromLocation(5 - row, col))) !== 0n;
+          const isWinningCell =
+            winningMask !== undefined && (winningMask & (1n << connect4.fromLocation(5 - row, col))) !== 0n;
           const isCellLastMove = lastMove?.row === 5 - row && lastMove?.column === col;
 
           return (

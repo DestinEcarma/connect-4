@@ -39,6 +39,18 @@ function getColMask(col: number) {
     return 0b111111n << BigInt(col * STRIDE);
 }
 
+function hasWon(board: bigint) {
+    for (const shift of DIRECTIONS) {
+        const m = board & (board >> shift);
+
+        if ((m & (m >> (2n * shift))) !== 0n) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function getWinningMask(board: bigint): bigint {
     let winningMask = 0n;
 
@@ -93,6 +105,7 @@ export {
     fromLocation,
     toLocation,
     getColMask,
+    hasWon,
     getWinningMask,
     bitboardToGrid,
     printBitBoard
