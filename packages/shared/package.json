@@ -15,6 +15,7 @@
         "build": "pkgroll"
     },
     "devDependencies": {
-        "pkgroll": "^2.25.2"
+        "pkgroll": "^2.25.2",
+        "typescript": "^5.9.3"
     }
 }
