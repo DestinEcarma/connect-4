@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import { ThemeProvider } from "@/provider/theme-provider";
-import { TopBarProvider } from "@/provider/top-bar-provider.tsx";
+import { TopBarProvider } from "@/provider/top-bar-provider";
 
 import "./index.css";
 import Home from "./routes/home";
