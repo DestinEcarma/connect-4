@@ -29,6 +29,7 @@ class GameRoomService {
 
         if (room.canStart()) {
             room.start();
+            this.scheduleTurnTimeout(room);
 
             this.roomLifecycleService.cancel(room.roomId, "reservation");
             this.emit.toRoom(roomId, "game:start", toStartPayload(room));
@@ -102,6 +103,7 @@ class GameRoomService {
             this.roomLifecycleService.cancel(room.roomId, "rematchCleanup");
 
             room.rematch();
+            this.scheduleTurnTimeout(room);
 
             this.emit.toRoom(room.roomId, "game:start", toStartPayload(room));
             return { ok: true, status: "RESTARTED", roomId: room.roomId } as const;

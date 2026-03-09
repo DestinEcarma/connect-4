@@ -24,6 +24,7 @@ function TopBarRoomStatus({
           You
           <span className="font-bold">
             <Countdown
+              key={`${timersMs[0]}-${relativeTime}-${turn === 0}`}
               timeMs={timersMs[myRole]}
               relativeTime={relativeTime}
               start={turn !== undefined && turn === myRole}
@@ -34,6 +35,7 @@ function TopBarRoomStatus({
         <div className="flex items-center gap-2">
           <span className="font-bold">
             <Countdown
+              key={`${timersMs[1]}-${relativeTime}-${turn === 1}`}
               timeMs={timersMs[myRole ^ 1]}
               relativeTime={relativeTime}
               start={turn !== undefined && turn !== myRole}
